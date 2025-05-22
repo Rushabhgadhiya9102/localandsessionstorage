@@ -72,6 +72,7 @@ const LocalStorage = () => {
     }
 
     setEmployee({});
+    setRole([])
     username.current.focus();
   };
 
@@ -98,6 +99,7 @@ const LocalStorage = () => {
     <>
       <section className="localStorage mt-5 ">
         <div className="container">
+          <h2 className="fs-1 text-center fw-semibold text-primary my-5">Local Storage </h2>
           <form
             method="post"
             className="p-4 rounded-4 border w-50 mx-auto"
@@ -149,6 +151,7 @@ const LocalStorage = () => {
                   id="Hr"
                   value="Hr"
                   name="role"
+                  checked={role.includes("Hr") ? true : false}
                   onChange={handleChange}
                 />
                 <label className="form-check-label" htmlFor="Hr">
@@ -163,6 +166,7 @@ const LocalStorage = () => {
                   id="Development"
                   value="Development"
                   name="role"
+                  checked={role.includes("Development") ? true : false}
                   onChange={handleChange}
                 />
                 <label className="form-check-label" htmlFor="Development">
@@ -177,6 +181,7 @@ const LocalStorage = () => {
                   id="Tester"
                   value="Tester"
                   name="role"
+                  checked={role.includes("Tester") ? true : false}
                   onChange={handleChange}
                 />
                 <label className="form-check-label" htmlFor="Tester">
@@ -196,6 +201,7 @@ const LocalStorage = () => {
 
       <section className="list my-5">
         <div className="container">
+          <h1 className="my-5">Employee Data </h1>
           <div className="row g-3">
             {empData.map((val, index) => (
               <div className="col-lg-3" key={index}>
