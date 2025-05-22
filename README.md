@@ -1,6 +1,6 @@
-**README**
+# README
 
-**Local and Session Storage**
+# Local and Session Storage
 
 A simple React application that demonstrates the use of local and session storage.
 
