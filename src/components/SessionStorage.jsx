@@ -1,240 +1,305 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, { use, useEffect, useRef, useState } from "react";
+import { BsPencilSquare } from "react-icons/bs";
+import { FaStar, FaTrash } from "react-icons/fa";
 
 const SessionStorage = () => {
 
- // ------------ U S E - S T A T E -------------
+  // ----------------- L O G I C - S T A R T ----------------------------
 
-  const [employee, setEmployee] = useState({});
-  const [empData, setEmpData] = useState([]);
-  const [role, setRole] = useState([]);
+  // ------------ U S E - S T A T E -------------
+
+  const [review, setReview] = useState({});
+  const [reviewData, setReviewData] = useState([]);
+  const [hover, setHover] = useState(0);
+  const [star, setStar] = useState(0);
   const [editId, setEditId] = useState(null);
+  const btnColor = useRef();
+  const btnText = useRef();
 
-  const btnSubmit = useRef();
-  const username = useRef();
-
-  // ----------- U S E - E F F E C T ------------
+  // ------------ U S E - E F F E C T -------------
 
   useEffect(() => {
-    let oldList = JSON.parse(sessionStorage.getItem("empData")) || [];
-    console.log("getitem :", oldList);
-    setEmpData(oldList);
+    let newData = JSON.parse(sessionStorage.getItem("review")) || [];
+    setReviewData(newData);
   }, []);
 
-  useEffect(() => {
-    sessionStorage.setItem("empData", JSON.stringify(empData));
-    console.log("setitem :", empData);
-  }, [empData]);
+  // ------------ H A N D L E - H O V E R -------------
 
-  // ---------- H A N D L E - C H A N G E -------------
+  const handleHover = (index) => {
+    setHover(index);
 
-  const handleChange = (event) => {
-    const { name, value, checked } = event.target;
-
-    if(name === "role"){
-
-      let newRole = [...role];
-
-      if(checked){
-        newRole.push(value)
-      }else {
-        newRole = newRole.filter((val) => val != value);
-      }
-
-      setRole(newRole);
-      setEmployee((prev) => ({ ...prev, role: newRole }));
-      return;
+    if (star != 0) {
+      setStar(0);
     }
-
-    let newObj = { ...employee, [name]: value };
-    setEmployee(newObj);
   };
 
-  // ---------- H A N D L E - S U B M I T -----------
+  // ------------ H A N D L E - L E A V E -------------
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleLeave = (index) => {
+    setHover(0);
+    setStar(index);
+  };
+
+  // ------------ H A N D L E - D O W N -------------
+
+  const handleDown = (index) => {
+    setStar(index);
+  };
+
+  // ------------ H A N D L E - C H A N G E -------------
+
+  const handleChange = (e) => {
+    let { name, value } = e.target;
+    setReview({ ...review, [name]: value });
+  };
+
+  // ------------ H A N D L E -S U B M I T -------------
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
     if (editId === null) {
-      let newArr = [...empData, { ...employee, id: Date.now() }];
-      setEmpData(newArr);
+
+      let newData = [...reviewData, { ...review, id: Date.now(), star: star }];
+      setReviewData(newData);
+      sessionStorage.setItem("review", JSON.stringify(newData));
+
     } else {
-      let data = empData.map((val) => {
+
+      let data = reviewData.map((val) => {
+
         if (val.id === editId) {
-          val = employee;
+          val = { ...review, id: editId, star };
+
         }
+
         return val;
       });
 
-      setEmpData(data);
+      sessionStorage.setItem("review", JSON.stringify(data));
+      setReviewData(data);
       setEditId(null);
-      btnSubmit.current.classList.remove("btn-success");
-      btnSubmit.current.innerText = "Submit";
-      btnSubmit.current.classList.add("btn-primary");
+
+      btnColor.current.classList.add("btn-danger");
+      btnColor.current.classList.remove("btn-success");
+      btnText.current.innerText = "Submit";
     }
 
-    setEmployee({});
-    setRole([])
-    username.current.focus();
+    setReview({});
+    setStar(0);
   };
 
-  // ---------- H A N D L E - D E L E T E --------------
+  // ------------ H A N D L E - D E L E T E -------------
 
   const handleDelete = (id) => {
-    let removeData = empData.filter((val) => val.id !== id);
-    setEmpData(removeData);
+
+    let removeData = reviewData.filter((value) => value.id !== id);
+    sessionStorage.setItem("review", JSON.stringify(removeData));
+    setReviewData(removeData);
+
   };
 
-  // --------- H A N D L E - E D I T ----------------
+  // ------------ H A N D L E - E D I T -------------
 
   const handleEdit = (id) => {
-    let editData = empData.filter((val) => val.id === id)[0];
-    setEmployee(editData);
+
+    let editData = reviewData.filter((value) => value.id === id)[0];
+    setReview(editData);
     setEditId(id);
-    btnSubmit.current.classList.add("btn-success");
-    btnSubmit.current.innerText = "Update";
-    btnSubmit.current.classList.remove("btn-primary");
-    username.current.focus();
+
+    btnColor.current.classList.remove("btn-danger");
+    btnColor.current.classList.add("btn-success");
+    btnText.current.innerText = "Update";
+
   };
+
+  // ----------------- L O G I C - E N D ----------------------------
 
   return (
     <>
-     <section className="sessionStorage mt-5 ">
-        <div className="container">
-          <h2 className="fs-1 text-center fw-semibold text-primary my-5">Session Storage </h2>
-          <form
-            method="post"
-            className="p-4 rounded-4 border w-50 mx-auto"
-            onSubmit={handleSubmit}
-          >
-            {/* email */}
+      <section className="form-section my-5">
 
-            <div className="mb-3">
-              <label htmlFor="username" className="form-label">
-                Employee Name
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="username"
-                name="username"
-                value={employee.username || ""}
-                onChange={handleChange}
-                ref={username}
-              />
-            </div>
+        {/* ------------ F O R M - S E C T I O N ------------- */}
+        <form
+          method="post"
+          className="shadow w-75 mx-auto p-5 rounded-3"
+          onSubmit={handleSubmit}
+        >
+          <div className="title">
+            <h2 className="text-danger fw-bold fs-4">Session Storage</h2>
+          </div>
+          <div className="row align-items-center">
+            <div className="col-lg-6">
 
-            {/* email */}
+          {/* ------------ F O R M - L E F T - S E C T I O N ------------- */}
 
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">
-                Email
-              </label>
-              <input
-                type="email"
-                className="form-control"
-                id="email"
-                name="email"
-                value={employee.email || ""}
-                onChange={handleChange}
-              />
-              <div id="emailHelp" className="form-text">
-                We'll never share your email with anyone else.
-              </div>
-            </div>
+              <div className="form-left-item px-3">
+                <div className="content">
+                  <h2 className="display-5 fw-bold mb-4">
+                    We'd love to hear{" "}
+                    <span className="text-danger">your thoughts</span>
+                  </h2>
+                  <p>
+                    Tell us about your vision which challanges are you facing?
+                    We'd love to stay in touch with you, so we are always ready
+                    to answer any question that interests you.
+                  </p>
+                </div>
 
-            {/* department */}
-
-            <div className="my-3">
-              <div className="form-check form-check-inline">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="Hr"
-                  value="Hr"
-                  name="role"
-                  checked={role.includes("Hr") ? true : false}
-                  onChange={handleChange}
-                />
-                <label className="form-check-label" htmlFor="Hr">
-                  Hr
-                </label>
-              </div>
-
-              <div className="form-check form-check-inline">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="Development"
-                  value="Development"
-                  name="role"
-                  checked={role.includes("Development") ? true : false}
-                  onChange={handleChange}
-                />
-                <label className="form-check-label" htmlFor="Development">
-                  Development
-                </label>
-              </div>
-
-              <div className="form-check form-check-inline">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="Tester"
-                  value="Tester"
-                  name="role"
-                  checked={role.includes("Tester") ? true : false}
-                  onChange={handleChange}
-                />
-                <label className="form-check-label" htmlFor="Tester">
-                  Tester
-                </label>
-              </div>
-            </div>
-
-            {/* submit button */}
-
-            <button type="submit" className="btn btn-primary" ref={btnSubmit}>
-              Submit
-            </button>
-          </form>
-        </div>
-      </section>
-
-      <section className="list my-5">
-        <div className="container">
-          <h1 className="my-5">Employee Data </h1>
-          <div className="row g-3">
-            {empData.map((val, index) => (
-              <div className="col-lg-3" key={index}>
-                <div className="card">
-                  <div className="card-body">
-                    <h6 className="card-title text-body-secondary">Id No: {index + 1}</h6>
-                    <h5 className="card-subtitle mb-2">
-                     Name: {val.username}
-                    </h5>
-                    <p className="card-text">Email: {val.email}</p>
-                    <p className="card-text">Role: {val.role ? val.role.toString() : []}</p>
-                    <button
-                      className="btn btn-danger me-2"
-                      onClick={() => handleDelete(val.id)}
-                    >
-                      Delete
-                    </button>
-                    <button
-                      className="btn btn-warning"
-                      onClick={() => handleEdit(val.id)}
-                    >
-                      Edit
-                    </button>
-                  </div>
+                <div className="star-ratings">
+                  {[
+                    ...Array(5)
+                      .keys()
+                      .map((_, index) => (
+                        <FaStar
+                          size={20}
+                          key={index}
+                          color={
+                            hover > index || star > index ? "#dc3545" : "gray"
+                          }
+                          onMouseOver={() => handleHover(index + 1)}
+                          onMouseLeave={() => handleLeave(index + 1)}
+                          onMouseDown={() => handleDown(index + 1)}
+                        />
+                      )),
+                  ]}
                 </div>
               </div>
-            ))}
+            </div>
+
+            <div className="col-lg-6">
+
+              {/* ------------ F O R M - R I G H T - S E C T I O N ------------- */}
+
+              <div className="form-right-item">
+
+                <div className="mb-3">
+                  <label htmlFor="username" className="form-label">
+                    What's your name?
+                  </label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    name="username"
+                    id="username"
+                    onChange={handleChange}
+                    value={review.username || ""}
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label">
+                    What's your email?
+                  </label>
+                  <input
+                    className="form-control"
+                    type="email"
+                    name="email"
+                    id="email"
+                    onChange={handleChange}
+                    value={review.email || ""}
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="reviews" className="form-label">
+                    Share your thoughts
+                  </label>
+                  <textarea
+                    name="reviews"
+                    className="form-control"
+                    id="reviews"
+                    onChange={handleChange}
+                    value={review.reviews || ""}
+                  ></textarea>
+                </div>
+
+                <button
+                  className="btn btn-danger icon-link icon-link-hover "
+                  ref={btnColor}
+                >
+                  <span ref={btnText}>Submit</span>
+                  <i className="bi bi-arrow-right mb-2"></i>
+                </button>
+
+              </div>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      {/* ------------ D A T A - S E C T I O N ------------- */}
+
+      <section className="data-section py-5">
+        <div className="container">
+          <div className="title mb-5">
+            <h2 className="fs-1 fw-bold">Reviews <span className="text-danger">Data</span></h2>
+          </div>
+          <div className="row g-3">
+            {reviewData.map((val, index) => {
+              const { username, email, reviews, id, star } = val;
+
+              return (
+                <div className="col-lg-4">
+                  <div className="card shadow">
+                    <div className="card-body">
+                      <h5 className="card-title">{username}</h5>
+                      <p className="card-text">
+                        {" "}
+                        <small>{email}</small>
+                      </p>
+                      <h6 className="card-subtitle mb-2 text-body-secondary mt-2">
+                        {[
+                          ...Array(5)
+                            .keys()
+                            .map((_, index) => (
+                              <FaStar
+                                key={index}
+                                color={star > index ? "#dc3545" : "grey"}
+                                size={20}
+                              />
+                            )),
+                        ]}
+                      </h6>
+
+                      <h5>{reviews}</h5>
+                      <div className="d-flex gap-2">
+                        <p>Did you find it helpful?</p>
+                        <a
+                          href="#"
+                          className="card-link text-decoration-none ms-1"
+                        >
+                          Yes
+                        </a>
+                        <a href="#" className="card-link text-decoration-none">
+                          No
+                        </a>
+                      </div>
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn btn-outline-danger"
+                          onClick={() => handleDelete(id)}
+                        >
+                          <FaTrash key={index} size={15} />
+                        </button>
+
+                        <button
+                          className="btn btn-outline-warning"
+                          onClick={() => handleEdit(id)}
+                        >
+                          <BsPencilSquare size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
     </>
-  )
-}
+  );
+};
 
-export default SessionStorage
+export default SessionStorage;
