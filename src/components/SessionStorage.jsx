@@ -147,6 +147,7 @@ const SessionStorage = () => {
                 </div>
 
                 <div className="star-ratings">
+                  <h5 className="text-danger fw-bold">Ratings</h5>
                   {[
                     ...Array(5)
                       .keys()
